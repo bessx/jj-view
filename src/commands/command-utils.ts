@@ -1,16 +1,7 @@
-// Copyright 2026 Google LLC
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+/**
+ * Copyright 2026 Google LLC
+ * SPDX-License-Identifier: Apache-2.0
+ */
 
 import { JjResourceState } from '../jj-scm-provider';
 import * as vscode from 'vscode';
@@ -129,4 +120,43 @@ export function getErrorMessage(error: unknown): string {
         return error.message;
     }
     return String(error);
+}
+
+/**
+ * Wraps a promise with a delayed progress notification.
+ * If the promise resolves within 100ms, no notification is shown.
+ * If it takes longer, a progress notification appears until the promise resolves.
+ */
+export async function withDelayedProgress<T>(title: string, promise: Promise<T>): Promise<T> {
+    const DELAY_MS = 100;
+
+    let notificationResolver: (value?: unknown) => void;
+    // Promise that resolves when the notification is dismissed (by the task finishing)
+    const notificationComplete = new Promise((resolve) => {
+        notificationResolver = resolve;
+    });
+
+    const timer = setTimeout(() => {
+        vscode.window.withProgress(
+            {
+                location: vscode.ProgressLocation.Notification,
+                title: title,
+                cancellable: false,
+            },
+            async () => {
+                // Wait for the original task to complete
+                await notificationComplete;
+            }
+        );
+    }, DELAY_MS);
+
+    try {
+        return await promise;
+    } finally {
+        clearTimeout(timer);
+        // Signal the progress window to close if it was opened
+        if (notificationResolver!) {
+            notificationResolver();
+        }
+    }
 }

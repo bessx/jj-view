@@ -1,23 +1,14 @@
-// Copyright 2026 Google LLC
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+/**
+ * Copyright 2026 Google LLC
+ * SPDX-License-Identifier: Apache-2.0
+ */
 
 import * as vscode from 'vscode';
 import * as path from 'path';
 import * as fs from 'fs/promises';
 import { JjService } from '../jj-service';
 import { JjScmProvider } from '../jj-scm-provider';
-import { collectResourceStates, extractRevision, getErrorMessage } from './command-utils';
+import { collectResourceStates, extractRevision, getErrorMessage, withDelayedProgress } from './command-utils';
 
 export async function squashCommand(scmProvider: JjScmProvider, jj: JjService, args: unknown[]) {
     const resourceStates = collectResourceStates(args);
@@ -76,7 +67,7 @@ export async function squashCommand(scmProvider: JjScmProvider, jj: JjService, a
 
         // Partial squash or implicit all without conflicting descriptions
         // Always use destination description to avoid launching interactive editor
-        await jj.squash(paths, revision, selected.detail!, undefined, true);
+        await withDelayedProgress('Squashing...', jj.squash(paths, revision, selected.detail!, undefined, true));
     } else {
         // Single parent
         let parentRev = '@-';
@@ -101,7 +92,7 @@ export async function squashCommand(scmProvider: JjScmProvider, jj: JjService, a
         }
 
         // Normal squash - use destination message (-u)
-        await jj.squash(paths, revision, parentRev, undefined, true);
+        await withDelayedProgress('Squashing...', jj.squash(paths, revision, parentRev, undefined, true));
     }
 
     await scmProvider.refresh({ reason: 'after squash' });
@@ -176,14 +167,14 @@ export async function completeSquashCommand(scmProvider: JjScmProvider, jj: JjSe
         // 3. Execute Squash
         // We use the stored paths, revision, parentRev
         if (paths && paths.length > 0) {
-            await jj.squash(paths, revision, parentRev, message);
+            await withDelayedProgress('Squashing...', jj.squash(paths, revision, parentRev, message));
         } else {
-            await jj.squash([], revision, parentRev, message); // Implicit all
+            await withDelayedProgress('Squashing...', jj.squash([], revision, parentRev, message)); // Implicit all
         }
 
         // Force update description on the parent (@-) because jj squash -m might be finicky
         if (message && message.length > 0) {
-            await jj.describe(message, '@-');
+            await withDelayedProgress('Updating description...', jj.describe(message, '@-'));
         }
 
         // 4. Cleanup

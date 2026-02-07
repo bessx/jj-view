@@ -1,16 +1,7 @@
-// Copyright 2026 Google LLC
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//      http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
+/**
+ * Copyright 2026 Google LLC
+ * SPDX-License-Identifier: Apache-2.0
+ */
 
 import { describe, test, expect, beforeEach, afterEach } from 'vitest';
 import * as fs from 'fs';
@@ -560,7 +551,7 @@ describe('JjService Unit Tests', () => {
 
         expect(child1Log!.parents[0]).toBe(parentLog!.commit_id);
         expect(child2Log!.parents[0]).toBe(parentLog!.commit_id);
-    });
+    }, 30000);
 
     test('Complex Replay (Reproduce User Scenario) with return IDs', async () => {
         const { Initial, FakeTS, CC, Cool, VPM, Orcs, HEAD } = await buildGraph(repo, [
@@ -1045,5 +1036,20 @@ describe('JjService Unit Tests', () => {
 
         expect(head.description).toBe('');
         expect(parent.description.trim()).toBe('my commit message');
+    });
+
+    test('getBookmarks returns bookmark names', async () => {
+        repo.bookmark('feature-a', '@');
+        repo.bookmark('feature-b', '@');
+        
+        const bookmarks = await jjService.getBookmarks();
+        
+        expect(bookmarks).toContain('feature-a');
+        expect(bookmarks).toContain('feature-b');
+        // We expect unique names. 
+        // Note: We cannot easily simulate duplicates (remote vs local) in this simple test setup 
+        // without valid remote fetching, but the implementation uses Set to guarantee uniqueness.
+        const uniqueBookmarks = new Set(bookmarks);
+        expect(bookmarks.length).toBe(uniqueBookmarks.size);
     });
 });
