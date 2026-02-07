@@ -15,32 +15,39 @@
 import * as vscode from 'vscode';
 import { JjService } from '../jj-service';
 import { JjScmProvider } from '../jj-scm-provider';
-import { commitCommand } from './commit';
+import { getErrorMessage } from './command-utils';
 
 export async function commitPromptCommand(scmProvider: JjScmProvider, jj: JjService) {
-    let message = scmProvider.sourceControl.inputBox.value;
+    // Determine the default value for the prompt
+    const inputBoxValue = scmProvider.sourceControl.inputBox.value;
+    const defaultValue = inputBoxValue || (await jj.getDescription('@'));
 
-    if (!message) {
-        // Input box is empty, prompt the user
-        const currentDescription = await jj.getDescription('@');
-        const input = await vscode.window.showInputBox({
-            prompt: 'Commit message',
-            placeHolder: 'Description of the change...',
-            value: currentDescription,
-        });
+    // Always show the prompt, pre-filled with either the input box value or current description
+    const input = await vscode.window.showInputBox({
+        prompt: 'Commit message',
+        placeHolder: 'Description of the change...',
+        value: defaultValue,
+    });
 
-        if (input === undefined) {
-            // User cancelled
-            return;
-        }
-        message = input;
-        
-        // Temporarily set the input box value so commitCommand can use it
-        // This reuses the existing logic in commitCommand (which handles empty checks, refreshing, etc)
-        // AND keeps the UI consistent (showing the message in the box before it "sent")
-        scmProvider.sourceControl.inputBox.value = message;
+    if (input === undefined) {
+        // User cancelled
+        return;
     }
 
-    // Now delegate to the standard commit command which expects the input box to be populated
-    await commitCommand(scmProvider, jj);
+    const message = input;
+
+    try {
+        if (message) {
+            // Non-empty message: commit with the message
+            await jj.commit(message);
+        } else {
+            // Empty message: create a new change, leaving the current commit with empty description
+            await jj.new();
+        }
+        scmProvider.sourceControl.inputBox.value = '';
+        vscode.window.showInformationMessage('Committed change');
+        await scmProvider.refresh({ reason: 'after commit' });
+    } catch (err: unknown) {
+        vscode.window.showErrorMessage(`Error committing change: ${getErrorMessage(err)}`);
+    }
 }

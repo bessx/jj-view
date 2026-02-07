@@ -101,20 +101,64 @@ describe('commitPromptCommand', () => {
         expect(vscode.window.showInformationMessage).not.toHaveBeenCalled();
     });
 
-    test('commits immediately if input box has text', async () => {
+    test('shows prompt even when input box has text', async () => {
         repo.new(undefined, 'initial');
         const inputBoxMock = scmProvider.sourceControl.inputBox;
         inputBoxMock.value = 'feat: quick commit';
         
+        // Mock user accepting the pre-filled value
+        vi.mocked(vscode.window.showInputBox).mockResolvedValue('feat: quick commit');
+
         await commitPromptCommand(scmProvider, jj);
 
-        expect(vscode.window.showInputBox).not.toHaveBeenCalled();
+        // Prompt should be shown with the input box value
+        expect(vscode.window.showInputBox).toHaveBeenCalledWith({
+            prompt: 'Commit message',
+            placeHolder: 'Description of the change...',
+            value: 'feat: quick commit',
+        });
 
         // Check that commit happened
         const parentId = repo.getParents('@')[0];
         const parentDesc = repo.getDescription(parentId);
         expect(parentDesc.trim()).toBe('feat: quick commit');
 
+        expect(scmProvider.sourceControl.inputBox.value).toBe('');
+        expect(vscode.window.showInformationMessage).toHaveBeenCalledWith('Committed change');
+    });
+
+    test('commits with blank message when prompt is cleared', async () => {
+        repo.new(undefined, 'initial');
+        const inputBoxMock = scmProvider.sourceControl.inputBox;
+        inputBoxMock.value = '';
+        
+        // Mock existing description
+        await jj.describe('existing description', '@'); 
+        
+        // Get the current change ID before the operation
+        const beforeChangeId = repo.getChangeId('@');
+        
+        // Mock user clearing the prompt (empty string)
+        vi.mocked(vscode.window.showInputBox).mockResolvedValue('');
+
+        await commitPromptCommand(scmProvider, jj);
+
+        expect(vscode.window.showInputBox).toHaveBeenCalled();
+
+        // Check that a new change was created (jj.new() was called)
+        // The current change ID should be different from before
+        const afterChangeId = repo.getChangeId('@');
+        expect(afterChangeId).not.toBe(beforeChangeId);
+        
+        // The parent should still have the existing description
+        const parentId = repo.getParents('@')[0];
+        const parentDesc = repo.getDescription(parentId);
+        expect(parentDesc.trim()).toBe('existing description');
+        
+        // The new working copy should have an empty description
+        const currentDesc = repo.getDescription('@');
+        expect(currentDesc.trim()).toBe('');
+        
         expect(scmProvider.sourceControl.inputBox.value).toBe('');
         expect(vscode.window.showInformationMessage).toHaveBeenCalledWith('Committed change');
     });
