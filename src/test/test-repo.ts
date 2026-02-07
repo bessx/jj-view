@@ -71,9 +71,6 @@ email = "test@example.com"
 
 [ui]
 merge-editor = "builtin"
-
-[signing]
-backend = "none"
 `;
         fs.writeFileSync(configPath, configContent);
 
