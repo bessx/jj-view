@@ -28,13 +28,7 @@ export async function commitPromptCommand(scmProvider: JjScmProvider, jj: JjServ
     const message = input;
 
     try {
-        if (message) {
-            // Non-empty message: commit with the message
-            await jj.commit(message);
-        } else {
-            // Empty message: create a new change, leaving the current commit with empty description
-            await jj.new();
-        }
+        await jj.commit(message);
         scmProvider.sourceControl.inputBox.value = '';
         vscode.window.showInformationMessage('Committed change');
         await scmProvider.refresh({ reason: 'after commit' });
