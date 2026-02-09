@@ -6,7 +6,7 @@
 import * as vscode from 'vscode';
 import { JjService } from '../jj-service';
 import { JjScmProvider } from '../jj-scm-provider';
-import { getErrorMessage } from './command-utils';
+import { getErrorMessage, withDelayedProgress } from './command-utils';
 
 export async function commitPromptCommand(scmProvider: JjScmProvider, jj: JjService) {
     // Determine the default value for the prompt
@@ -28,7 +28,7 @@ export async function commitPromptCommand(scmProvider: JjScmProvider, jj: JjServ
     const message = input;
 
     try {
-        await jj.commit(message);
+        await withDelayedProgress('Committing...', jj.commit(message));
         scmProvider.sourceControl.inputBox.value = '';
         vscode.window.showInformationMessage('Committed change');
         await scmProvider.refresh({ reason: 'after commit' });
