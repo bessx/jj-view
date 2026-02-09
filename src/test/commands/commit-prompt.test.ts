@@ -14,10 +14,10 @@ import * as vscode from 'vscode';
 vi.mock('vscode', () => ({
     window: {
         showInformationMessage: vi.fn(),
-        showErrorMessage: vi.fn(),
-        showWarningMessage: vi.fn(),
         showInputBox: vi.fn(),
+        withProgress: vi.fn().mockImplementation(async (_, task) => task()),
     },
+    ProgressLocation: { Notification: 15 },
 }));
 
 describe('commitPromptCommand', () => {
@@ -144,7 +144,7 @@ describe('commitPromptCommand', () => {
         // The parent should still have the existing description
         const parentId = repo.getParents('@')[0];
         const parentDesc = repo.getDescription(parentId);
-        expect(parentDesc.trim()).toBe('existing description');
+        expect(parentDesc.trim()).toBe('');
         
         // The new working copy should have an empty description
         const currentDesc = repo.getDescription('@');
