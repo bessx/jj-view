@@ -85,6 +85,12 @@
                 "icon": "$(check)"
             },
             {
+                "command": "jj-view.commitPrompt",
+                "title": "Commit (Prompt)",
+                "category": "JJ View",
+                "icon": "$(check)"
+            },
+            {
                 "command": "jj-view.refresh",
                 "title": "Refresh",
                 "category": "JJ View",
