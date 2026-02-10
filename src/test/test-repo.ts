@@ -26,11 +26,12 @@ export class TestRepo {
     // POLICY: This method is intentionally private. Do not expose it publicly.
     // Instead, create specific methods for each operation to ensure strictly typed usage
     // and prevent arbitrary command execution in tests.
-    private exec(args: string[], options: { trim?: boolean } = {}) {
+    private exec(args: string[], options: { trim?: boolean; suppressStderr?: boolean } = {}) {
         try {
             const output = cp.execFileSync('jj', ['--quiet', ...args], {
                 cwd: this.path,
                 encoding: 'utf-8',
+                stdio: options.suppressStderr ? ['ignore', 'pipe', 'ignore'] : undefined,
             });
             return options.trim !== false ? output.trim() : output;
         } catch (e: unknown) {
