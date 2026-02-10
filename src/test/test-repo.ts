@@ -42,6 +42,10 @@ export class TestRepo {
         }
     }
 
+    config(name: string, value: string, suppressStderr?: boolean) {
+        this.exec(['config', 'set', '--repo', name, value], { suppressStderr });
+    }
+
     init() {
         this.exec(['git', 'init']);
 
