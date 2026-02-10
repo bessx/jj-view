@@ -1,7 +1,16 @@
-/**
- * Copyright 2026 Google LLC
- * SPDX-License-Identifier: Apache-2.0
- */
+// Copyright 2026 Google LLC
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
 import * as vscode from 'vscode';
 
@@ -20,7 +29,6 @@ import { newCommand } from './commands/new';
 import { uploadCommand } from './commands/upload';
 import { discardChangeCommand } from './commands/discard-change';
 import { squashChangeCommand } from './commands/squash-change';
-import { setBookmarkCommand } from './commands/bookmark';
 
 export interface Api {
     scmProvider: JjScmProvider;
@@ -203,12 +211,6 @@ export function activate(context: vscode.ExtensionContext) {
                 await squashChangeCommand(scmProvider, jj, uri, changes, index);
             },
         ),
-    );
-
-    context.subscriptions.push(
-        vscode.commands.registerCommand('jj-view.setBookmark', async (arg: { commitId: string }) => {
-            await setBookmarkCommand(scmProvider, jj, arg);
-        }),
     );
 
     // Register view provider

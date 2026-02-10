@@ -1,7 +1,16 @@
-/**
- * Copyright 2026 Google LLC
- * SPDX-License-Identifier: Apache-2.0
- */
+// Copyright 2026 Google LLC
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
 
 import * as fs from 'fs';
 import * as path from 'path';
@@ -26,12 +35,11 @@ export class TestRepo {
     // POLICY: This method is intentionally private. Do not expose it publicly.
     // Instead, create specific methods for each operation to ensure strictly typed usage
     // and prevent arbitrary command execution in tests.
-    private exec(args: string[], options: { trim?: boolean; suppressStderr?: boolean } = {}) {
+    private exec(args: string[], options: { trim?: boolean } = {}) {
         try {
             const output = cp.execFileSync('jj', ['--quiet', ...args], {
                 cwd: this.path,
                 encoding: 'utf-8',
-                stdio: options.suppressStderr ? ['ignore', 'pipe', 'ignore'] : undefined,
             });
             return options.trim !== false ? output.trim() : output;
         } catch (e: unknown) {
@@ -43,10 +51,6 @@ export class TestRepo {
         }
     }
 
-    config(name: string, value: string, suppressStderr?: boolean) {
-        this.exec(['config', 'set', '--repo', name, value], { suppressStderr });
-    }
-
     init() {
         this.exec(['git', 'init']);
 
@@ -55,9 +59,12 @@ export class TestRepo {
         // Use suppressStderr to the user settings to hide "future commits" warnings.
         this.config('user.name', 'Test User', /*suppressStderr=*/ true);
         this.config('user.email', 'test@example.com', /*suppressStderr=*/ true);
-        this.exec(['metaedit', '--update-author']);
-
         this.config('ui.merge-editor', 'builtin');
+
+        // Disable signing for this repo (do not rely on .jj/repo/config.toml)
+        this.config('signing.backend', 'none');
+
+        this.exec(['metaedit', '--update-author']);
 
         // Configure repo-local settings to avoid global process.env pollution
         const configPath = path.join(this.path, '.jj', 'repo', 'config.toml');
@@ -71,6 +78,9 @@ email = "test@example.com"
 
 [ui]
 merge-editor = "builtin"
+
+[signing]
+backend = "none"
 `;
         fs.writeFileSync(configPath, configContent);
 

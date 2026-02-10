@@ -3,7 +3,7 @@
     "publisher": "jj-view",
     "displayName": "JJ View",
     "description": "Integrates Jujutsu (jj) version control into VS Code.",
-    "version": "1.6.0",
+    "version": "1.4.0",
     "repository": {
         "type": "git",
         "url": "https://github.com/brychanrobot/jj-view"
@@ -192,12 +192,6 @@
                 "title": "Squash Change to Parent",
                 "category": "JJ View",
                 "icon": "$(repo-pull)"
-            },
-            {
-                "command": "jj-view.setBookmark",
-                "title": "Set Bookmark",
-                "category": "JJ View",
-                "icon": "$(bookmark)"
             }
         ],
         "keybindings": [
@@ -261,11 +255,6 @@
                 {
                     "command": "jj-view.abandon",
                     "when": "webviewSection == 'commit' && canAbandon",
-                    "group": "navigation"
-                },
-                {
-                    "command": "jj-view.setBookmark",
-                    "when": "webviewSection == 'commit'",
                     "group": "navigation"
                 }
             ],

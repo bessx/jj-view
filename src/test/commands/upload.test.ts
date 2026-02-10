@@ -24,7 +24,7 @@ vi.mock('vscode', () => ({
     ProgressLocation: { Notification: 15 },
     window: {
         showErrorMessage: vi.fn(),
-        withProgress: vi.fn().mockImplementation(async (_, task) => task()),
+        withProgress: vi.fn((_opts, task) => task()),
         setStatusBarMessage: vi.fn(),
     },
 }));

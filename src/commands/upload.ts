@@ -7,7 +7,6 @@ import * as vscode from 'vscode';
 import { JjService } from '../jj-service';
 import { JjScmProvider } from '../jj-scm-provider';
 import { GerritService } from '../gerrit-service';
-import { withDelayedProgress } from './command-utils';
 
 export async function uploadCommand(
     scmProvider: JjScmProvider,
@@ -37,9 +36,15 @@ export async function uploadCommand(
             return;
         }
 
-        await withDelayedProgress(
-            `Uploading revision ${revision.substring(0, 8)}...`,
-            jj.upload(args, revision)
+        await vscode.window.withProgress(
+            {
+                location: vscode.ProgressLocation.Notification,
+                title: `Uploading revision ${revision.substring(0, 8)}...`,
+                cancellable: false,
+            },
+            async () => {
+                await jj.upload(args, revision);
+            }
         );
 
         // Refresh view
