@@ -58,22 +58,10 @@ export class TestRepo {
         this.exec(['metaedit', '--update-author']);
 
         this.config('ui.merge-editor', 'builtin');
-
-        // Configure repo-local settings to avoid global process.env pollution
-        const configPath = path.join(this.path, '.jj', 'repo', 'config.toml');
-        const configDir = path.dirname(configPath);
-        fs.mkdirSync(configDir, { recursive: true });
-
-        const configContent = `
-[user]
-name = "Test User"
-email = "test@example.com"
-
-[ui]
-merge-editor = "builtin"
-`;
-        fs.writeFileSync(configPath, configContent);
-
+        
+        // Ensure that tests don't fail if the user has configured signing globally (e.g.
+        // signing.sign-all = true). Background processes in tests can't prompt for passphrases.
+        this.config('signing.backend', 'none');
     }
 
     new(parents?: string[], message?: string) {
