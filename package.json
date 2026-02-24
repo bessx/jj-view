@@ -92,6 +92,12 @@
                 "icon": "$(save)"
             },
             {
+                "command": "jj-view.describePrompt",
+                "title": "Set Description (Prompt)",
+                "category": "JJ View",
+                "icon": "$(save)"
+            },
+            {
                 "command": "jj-view.commit",
                 "title": "Commit",
                 "category": "JJ View",

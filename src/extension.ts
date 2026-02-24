@@ -37,6 +37,7 @@ import { showDetailsCommand } from './commands/details';
 import { showCurrentChangeCommand } from './commands/show';
 import { commitCommand } from './commands/commit';
 import { commitPromptCommand } from './commands/commit-prompt';
+import { describePromptCommand } from './commands/describe-prompt';
 import { rebaseOntoSelectedCommand, CommitMenuContext } from './commands/rebase';
 import { openMergeEditorCommand } from './commands/merge-editor';
 import { refreshCommand } from './commands/refresh';
@@ -92,6 +93,10 @@ export function activate(context: vscode.ExtensionContext) {
 
     const commitPromptCmd = vscode.commands.registerCommand('jj-view.commitPrompt', async () => {
         await commitPromptCommand(scmProvider, jj);
+    });
+
+    const describePromptCmd = vscode.commands.registerCommand('jj-view.describePrompt', async () => {
+        await describePromptCommand(scmProvider, jj);
     });
 
     context.subscriptions.push(
@@ -272,6 +277,7 @@ export function activate(context: vscode.ExtensionContext) {
     context.subscriptions.push(newMergeCommand);
     context.subscriptions.push(commitCmd);
     context.subscriptions.push(commitPromptCmd);
+    context.subscriptions.push(describePromptCmd);
     context.subscriptions.push(scmProvider);
 
     context.subscriptions.push(
