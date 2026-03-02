@@ -85,7 +85,7 @@ describe('describePromptCommand', () => {
         // The description of @ should still be 'existing' (no change)
         const desc = repo.getDescription('@');
         expect(desc.trim()).toBe('existing');
-        expect(vscode.window.showInformationMessage).not.toHaveBeenCalled();
+        expect(scmProvider.refresh).not.toHaveBeenCalled();
     });
 
     test('shows prompt even when input box has text', async () => {
