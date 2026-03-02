@@ -21,7 +21,7 @@ export async function commitPromptCommand(scmProvider: JjScmProvider, jj: JjServ
     });
 
     if (input === undefined) {
-        // User cancelled
+        // User canceled
         return;
     }
 

@@ -53,7 +53,7 @@ export async function squashCommand(scmProvider: JjScmProvider, jj: JjService, a
 
         if (!selected) {
             return;
-        } // User cancelled
+        } // User canceled
 
         // Squash from working copy into selected parent
         const hasCurrentDesc = currentEntry.description && currentEntry.description.trim().length > 0;

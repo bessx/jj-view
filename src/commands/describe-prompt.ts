@@ -21,7 +21,7 @@ export async function describePromptCommand(scmProvider: JjScmProvider, jj: JjSe
     });
 
     if (input === undefined) {
-        // User cancelled
+        // User canceled
         return;
     }
 
